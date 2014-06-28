@@ -97,12 +97,14 @@ fn main() {
     unsafe { gl::GenVertexArrays(1, &mut vao) };
     gl::BindVertexArray(vao);
 
+    let sizeof_float = mem::size_of::<GLfloat>();
+
     // Create a Vertex Buffer Object and copy the vertex data to it
     unsafe {
         gl::GenBuffers(1, &mut vbo);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::BufferData(gl::ARRAY_BUFFER,
-                       (VERTEX_DATA.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+                       (VERTEX_DATA.len() * sizeof_float) as GLsizeiptr,
                        VERTEX_DATA.as_ptr() as *GLvoid,
                        gl::STATIC_DRAW);
     }
