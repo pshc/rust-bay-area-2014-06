@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+extern crate cgmath;
 extern crate gl;
 extern crate glfw;
 extern crate native;
@@ -19,6 +20,11 @@ extern crate native;
 use gl::types::{GLchar, GLenum, GLfloat};
 use gl::types::{GLint, GLsizei, GLsizeiptr, GLuint, GLvoid};
 use glfw::Context;
+use cgmath::angle::rad;
+use cgmath::array::Array2;
+use cgmath::matrix::{ToMatrix4};
+use cgmath::quaternion::Quaternion;
+use cgmath::rotation::Rotation3;
 use std::mem;
 use std::ptr;
 
@@ -30,11 +36,12 @@ static VERTEX_DATA: [GLfloat, ..18] = [
 
 static VERTEX_SHADER_SRC: &'static [u8] = b"
     #version 150
+    uniform mat4 modelview;
     in vec2 position;
     in vec4 color;
     out vec4 in_color;
     void main() {
-       gl_Position = vec4(position, 0.0, 1.0);
+       gl_Position = modelview * vec4(position, 0.0, 1.0);
        in_color = color;
     }
 ";
@@ -134,6 +141,14 @@ fn main() {
                                 gl::FALSE, stride, ptr::null().offset(2 * sizeof_float as int));
     }
 
+    let get_uniform = |s: &str| -> GLint { s.with_c_str(|ptr| unsafe { gl::GetUniformLocation(program, ptr) }) };
+    let modelview = get_uniform("modelview");
+
+    let mut quat = Quaternion::identity();
+    let mut velx: GLfloat = 0.0;
+    let mut vely: GLfloat = 0.0;
+    let mut velz: GLfloat = 0.0;
+
     while !window.should_close() {
         // Poll and handle events
         glfw.poll_events();
@@ -142,6 +157,17 @@ fn main() {
         // Clear the screen to a nice black
         gl::ClearColor(0.0, 0.0, 0.0, 1.0);
         gl::Clear(gl::COLOR_BUFFER_BIT);
+
+        // Rotate
+        {
+            velx += 0.001;
+            vely -= 0.003;
+            velz -= 0.001;
+            quat = quat.mul_q(&Rotation3::from_angle_x(rad(velx)));
+            quat = quat.mul_q(&Rotation3::from_angle_y(rad(vely)));
+            quat = quat.mul_q(&Rotation3::from_angle_z(rad(velz)));
+            uniform_quaternion(modelview, &quat);
+        }
 
         // Draw a triangle from the 3 vertices
         gl::DrawArrays(gl::TRIANGLES, 0, 3);
@@ -157,6 +183,13 @@ fn main() {
     unsafe {
         gl::DeleteBuffers(1, &vbo);
         gl::DeleteVertexArrays(1, &vao);
+    }
+}
+
+fn uniform_quaternion(location: GLint, q: &Quaternion<GLfloat>) {
+    let mat = q.to_matrix4();
+    unsafe {
+        gl::UniformMatrix4fv(location, 1, gl::FALSE, mat.ptr());
     }
 }
 
