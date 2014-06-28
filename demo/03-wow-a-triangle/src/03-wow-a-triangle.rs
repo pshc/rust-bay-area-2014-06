@@ -17,30 +17,34 @@ extern crate glfw;
 extern crate native;
 
 use gl::types::{GLchar, GLenum, GLfloat};
-use gl::types::{GLint, GLsizeiptr, GLuint, GLvoid};
+use gl::types::{GLint, GLsizei, GLsizeiptr, GLuint, GLvoid};
 use glfw::Context;
 use std::mem;
 use std::ptr;
 
-static VERTEX_DATA: [GLfloat, ..6] = [
-     0.0,  0.5,
-     0.5, -0.5,
-    -0.5, -0.5,
+static VERTEX_DATA: [GLfloat, ..18] = [
+     0.0,  0.5,    0.0,  0.0,  1.0,  1.0,
+     0.5, -0.5,    0.0,  1.0,  0.0,  1.0,
+    -0.5, -0.5,    1.0,  0.0,  0.0,  1.0,
 ];
 
 static VERTEX_SHADER_SRC: &'static [u8] = b"
     #version 150
     in vec2 position;
+    in vec4 color;
+    out vec4 in_color;
     void main() {
        gl_Position = vec4(position, 0.0, 1.0);
+       in_color = color;
     }
 ";
 
 static FRAGMENT_SHADER_SRC: &'static [u8] = b"
     #version 150
+    in vec4 in_color;
     out vec4 out_color;
     void main() {
-       out_color = vec4(1.0, 1.0, 1.0, 1.0);
+       out_color = in_color;
     }
 ";
 
@@ -115,11 +119,16 @@ fn main() {
     unsafe {
         "out_color".with_c_str(|ptr| gl::BindFragDataLocation(program, 0, ptr));
         let pos_attr = "position".with_c_str(|ptr| gl::GetAttribLocation(program, ptr));
+        let color_attr =  "color".with_c_str(|ptr| gl::GetAttribLocation(program, ptr));
 
         // Specify the layout of the vertex data
         gl::EnableVertexAttribArray(pos_attr as GLuint);
+        gl::EnableVertexAttribArray(color_attr as GLuint);
+        let stride = 6 * sizeof_float as GLsizei;
         gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT,
-                                gl::FALSE, 0, ptr::null());
+                                gl::FALSE, stride, ptr::null());
+        gl::VertexAttribPointer(color_attr as GLuint, 4, gl::FLOAT,
+                                gl::FALSE, stride, ptr::null().offset(2 * sizeof_float as int));
     }
 
     while !window.should_close() {
