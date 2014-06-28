@@ -16,7 +16,7 @@ extern crate gl;
 extern crate glfw;
 extern crate native;
 
-use gl::types::{GLboolean, GLchar, GLenum, GLfloat};
+use gl::types::{GLchar, GLenum, GLfloat};
 use gl::types::{GLint, GLsizeiptr, GLuint, GLvoid};
 use glfw::Context;
 use std::mem;
@@ -119,7 +119,7 @@ fn main() {
         // Specify the layout of the vertex data
         gl::EnableVertexAttribArray(pos_attr as GLuint);
         gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT,
-                                gl::FALSE as GLboolean, 0, ptr::null());
+                                gl::FALSE, 0, ptr::null());
     }
 
     while !window.should_close() {
