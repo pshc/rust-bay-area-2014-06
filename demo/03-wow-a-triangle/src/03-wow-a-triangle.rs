@@ -116,10 +116,13 @@ fn main() {
     // Use the shader program
     gl::UseProgram(program);
 
+    // Attributes
     unsafe {
         "out_color".with_c_str(|ptr| gl::BindFragDataLocation(program, 0, ptr));
-        let pos_attr = "position".with_c_str(|ptr| gl::GetAttribLocation(program, ptr));
-        let color_attr =  "color".with_c_str(|ptr| gl::GetAttribLocation(program, ptr));
+
+        let get_attrib_location = |s: &str| -> GLint { s.with_c_str(|ptr| gl::GetAttribLocation(program, ptr)) };
+        let pos_attr = get_attrib_location("position");
+        let color_attr = get_attrib_location("color");
 
         // Specify the layout of the vertex data
         gl::EnableVertexAttribArray(pos_attr as GLuint);
