@@ -78,7 +78,7 @@ fn main() {
     glfw.window_hint(glfw::OpenglForwardCompat(true));
     glfw.window_hint(glfw::OpenglProfile(glfw::OpenGlCoreProfile));
 
-    let (window, events) = glfw.create_window(800, 600, "Hurro", glfw::Windowed)
+    let (window, events) = glfw.create_window(800, 600, "Spiiiin", glfw::Windowed)
         .expect("Failed to create GLFW window.");
 
     window.set_key_polling(true);
@@ -139,8 +139,8 @@ fn main() {
         glfw.poll_events();
         handle_events(&window, &events);
 
-        // Clear the screen to a nice grey
-        gl::ClearColor(0.3, 0.3, 0.3, 1.0);
+        // Clear the screen to a nice black
+        gl::ClearColor(0.0, 0.0, 0.0, 1.0);
         gl::Clear(gl::COLOR_BUFFER_BIT);
 
         // Draw a triangle from the 3 vertices
